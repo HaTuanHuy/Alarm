@@ -87,13 +87,41 @@ class _AlarmPageState extends State<AlarmPage> with WidgetsBindingObserver {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Future<Alarm> _scheduleAndMerge(Alarm alarm) async {
+  void _showScheduledMessage(String base, {int secondOffset = 0}) {
+    if (secondOffset <= 0) {
+      _showMessage(base);
+      return;
+    }
+
+    _showMessage(
+      '$base. Same-time alarm detected, scheduled +${secondOffset}s to avoid collisions.',
+    );
+  }
+
+  int _secondOffsetFor(Alarm alarm) {
+    final sameMinuteEnabledCount = alarms
+        .where(
+          (a) =>
+              a.id != alarm.id &&
+              a.enabled &&
+              a.hour == alarm.hour &&
+              a.minute == alarm.minute,
+        )
+        .length;
+
+    if (sameMinuteEnabledCount <= 0) return 0;
+    return sameMinuteEnabledCount % 30;
+  }
+
+  Future<Alarm> _scheduleAndMerge(Alarm alarm, {int? secondOffset}) async {
+    final resolvedSecondOffset = secondOffset ?? _secondOffsetFor(alarm);
     final scheduled = await NotificationService.instance.scheduleAlarm(
       id: alarm.id,
       hour: alarm.hour,
       minute: alarm.minute,
       label: alarm.label,
       repeatDaily: alarm.repeatDaily,
+      secondOffset: resolvedSecondOffset,
     );
 
     return alarm.copyWith(
@@ -170,9 +198,13 @@ class _AlarmPageState extends State<AlarmPage> with WidgetsBindingObserver {
     final idx = alarms.indexWhere((x) => x.id == alarm.id);
     try {
       if (idx >= 0) {
-        alarms[idx] = await _scheduleAndMerge(alarm);
+        final secondOffset = _secondOffsetFor(alarm);
+        alarms[idx] = await _scheduleAndMerge(
+          alarm,
+          secondOffset: secondOffset,
+        );
+        _showScheduledMessage('Alarm created', secondOffset: secondOffset);
       }
-      _showMessage('Alarm created');
     } catch (_) {
       if (idx >= 0) {
         alarms[idx] = alarms[idx].copyWith(
@@ -205,8 +237,9 @@ class _AlarmPageState extends State<AlarmPage> with WidgetsBindingObserver {
 
     if (updated.enabled) {
       try {
-        updated = await _scheduleAndMerge(updated);
-        _showMessage('Alarm updated');
+        final secondOffset = _secondOffsetFor(updated);
+        updated = await _scheduleAndMerge(updated, secondOffset: secondOffset);
+        _showScheduledMessage('Alarm updated', secondOffset: secondOffset);
       } catch (_) {
         updated = updated.copyWith(enabled: false, clearScheduledAt: true);
         _showMessage(
@@ -228,7 +261,11 @@ class _AlarmPageState extends State<AlarmPage> with WidgetsBindingObserver {
 
     if (enabled) {
       try {
-        alarms[idx] = await _scheduleAndMerge(a);
+        final secondOffset = _secondOffsetFor(a);
+        alarms[idx] = await _scheduleAndMerge(a, secondOffset: secondOffset);
+        if (secondOffset > 0) {
+          _showScheduledMessage('Alarm enabled', secondOffset: secondOffset);
+        }
         await _persist();
       } catch (_) {
         alarms[idx] = a.copyWith(enabled: false, clearScheduledAt: true);

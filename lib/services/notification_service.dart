@@ -14,9 +14,12 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
 
-  static const _channelId = 'alarms';
-  static const _channelName = 'Alarms';
-  static const _channelDesc = 'Alarm notifications';
+  static const _alarmChannelId = 'alarms_v2';
+  static const _alarmChannelName = 'Alarms';
+  static const _alarmChannelDesc = 'Alarm notifications';
+  static const _timerChannelId = 'countdown_v1';
+  static const _timerChannelName = 'Countdown';
+  static const _timerChannelDesc = 'Countdown timer notifications';
   static const _countdownNotificationId = 900001;
 
   Future<void> init() async {
@@ -50,6 +53,7 @@ class NotificationService {
     required int minute,
     required String label,
     required bool repeatDaily,
+    int secondOffset = 0,
   }) async {
     final now = tz.TZDateTime.now(tz.local);
     var scheduled = tz.TZDateTime(
@@ -59,6 +63,7 @@ class NotificationService {
       now.day,
       hour,
       minute,
+      secondOffset,
     );
     if (scheduled.isBefore(now)) {
       scheduled = scheduled.add(const Duration(days: 1));
@@ -66,9 +71,9 @@ class NotificationService {
 
     const details = NotificationDetails(
       android: AndroidNotificationDetails(
-        _channelId,
-        _channelName,
-        channelDescription: _channelDesc,
+        _alarmChannelId,
+        _alarmChannelName,
+        channelDescription: _alarmChannelDesc,
         importance: Importance.max,
         priority: Priority.high,
       ),
@@ -96,9 +101,9 @@ class NotificationService {
   }) async {
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
-        _channelId,
-        _channelName,
-        channelDescription: _channelDesc,
+        _timerChannelId,
+        _timerChannelName,
+        channelDescription: _timerChannelDesc,
         importance: Importance.max,
         priority: Priority.high,
         playSound: playSound,
