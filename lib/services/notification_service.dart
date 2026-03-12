@@ -33,6 +33,7 @@ class NotificationService {
     await _plugin.initialize(
       initSettings,
       onDidReceiveNotificationResponse: (resp) {
+        print('🔔 NOTIFICATION TAP: ${resp.payload}');
         rootNavKey.currentState?.push(
           MaterialPageRoute(builder: (_) => const _AlarmLanding()),
         );
@@ -76,6 +77,9 @@ class NotificationService {
         channelDescription: _alarmChannelDesc,
         importance: Importance.max,
         priority: Priority.high,
+        playSound: true,
+        enableVibration: true,
+        sound: RawResourceAndroidSound('default_ring'), // system ring
       ),
     );
 
@@ -87,6 +91,9 @@ class NotificationService {
       details: details,
       payload: 'alarm:$id',
       repeatDaily: repeatDaily,
+    );
+    print(
+      '🔔 ALARM SCHEDULED: id=$id at ${scheduled.toString()} (repeat=$repeatDaily, offset=$secondOffset)',
     );
 
     return scheduled;
