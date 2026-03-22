@@ -62,7 +62,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
     final secondProgress = (elapsedMs % 1000) / 1000;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Stopwatch')),
+      appBar: AppBar(title: const Text('Bấm giờ')),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
         child: Column(
@@ -91,22 +91,22 @@ class _StopwatchPageState extends State<StopwatchPage> {
                         FilledButton.icon(
                           onPressed: running ? null : _start,
                           icon: const Icon(Icons.play_arrow),
-                          label: const Text('Start'),
+                          label: const Text('Bắt đầu'),
                         ),
                         FilledButton.icon(
                           onPressed: running ? _pause : null,
                           icon: const Icon(Icons.pause),
-                          label: const Text('Pause'),
+                          label: const Text('Tạm dừng'),
                         ),
                         OutlinedButton.icon(
                           onPressed: _lap,
                           icon: const Icon(Icons.flag),
-                          label: const Text('Lap'),
+                          label: const Text('Vòng'),
                         ),
                         OutlinedButton.icon(
                           onPressed: _reset,
                           icon: const Icon(Icons.refresh),
-                          label: const Text('Reset'),
+                          label: const Text('Đặt lại'),
                         ),
                       ],
                     ),
@@ -119,7 +119,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
               child: laps.isEmpty
                   ? Center(
                       child: Text(
-                        'No laps yet',
+                        'Chưa có vòng nào',
                         style: theme.textTheme.titleMedium,
                       ),
                     )
@@ -131,7 +131,7 @@ class _StopwatchPageState extends State<StopwatchPage> {
                           leading: CircleAvatar(
                             child: Text('${laps.length - i}'),
                           ),
-                          title: Text('Lap ${laps.length - i}'),
+                          title: Text('Vòng ${laps.length - i}'),
                           trailing: Text(_fmt(laps[i])),
                         ),
                       ),

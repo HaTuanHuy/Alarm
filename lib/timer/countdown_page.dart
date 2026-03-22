@@ -110,20 +110,20 @@ class _CountdownPageState extends State<CountdownPage> {
     final apply = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Countdown notification'),
+        title: const Text('Thông báo đếm ngược'),
         content: StatefulBuilder(
           builder: (context, setLocal) => Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Sound'),
+                title: const Text('Âm thanh'),
                 value: localSound,
                 onChanged: (v) => setLocal(() => localSound = v),
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Vibration'),
+                title: const Text('Rung'),
                 value: localVibration,
                 onChanged: (v) => setLocal(() => localVibration = v),
               ),
@@ -133,11 +133,11 @@ class _CountdownPageState extends State<CountdownPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: const Text('Hủy'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Save'),
+            child: const Text('Lưu'),
           ),
         ],
       ),
@@ -246,14 +246,14 @@ class _CountdownPageState extends State<CountdownPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Set timer'),
+        title: const Text('Đặt thời gian'),
         content: StatefulBuilder(
           builder: (context, setLocal) => Row(
             children: [
               Expanded(
                 child: DropdownButtonFormField<int>(
                   initialValue: minutes,
-                  decoration: const InputDecoration(labelText: 'Minutes'),
+                  decoration: const InputDecoration(labelText: 'Phút'),
                   items: List.generate(60, (i) => i)
                       .map((v) => DropdownMenuItem(value: v, child: Text('$v')))
                       .toList(),
@@ -264,7 +264,7 @@ class _CountdownPageState extends State<CountdownPage> {
               Expanded(
                 child: DropdownButtonFormField<int>(
                   initialValue: seconds,
-                  decoration: const InputDecoration(labelText: 'Seconds'),
+                  decoration: const InputDecoration(labelText: 'Giây'),
                   items: List.generate(60, (i) => i)
                       .map((v) => DropdownMenuItem(value: v, child: Text('$v')))
                       .toList(),
@@ -277,7 +277,7 @@ class _CountdownPageState extends State<CountdownPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: const Text('Hủy'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
@@ -314,12 +314,12 @@ class _CountdownPageState extends State<CountdownPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Countdown'),
+        title: const Text('Đếm ngược'),
         actions: [
           IconButton(
             onPressed: _openNotificationSettings,
             icon: const Icon(Icons.notifications_active_outlined),
-            tooltip: 'Notification settings',
+            tooltip: 'Cài đặt thông báo',
           ),
           IconButton(
             onPressed: running ? null : _pickDuration,
@@ -349,8 +349,8 @@ class _CountdownPageState extends State<CountdownPage> {
                     const SizedBox(height: 4),
                     Text(
                       total.inSeconds == 0
-                          ? 'Set your timer'
-                          : 'Set: ${_fmt(total)}',
+                          ? 'Hãy đặt thời gian'
+                          : 'Đặt: ${_fmt(total)}',
                       style: theme.textTheme.bodyMedium,
                     ),
                     const SizedBox(height: 20),
@@ -362,24 +362,24 @@ class _CountdownPageState extends State<CountdownPage> {
                         OutlinedButton.icon(
                           onPressed: running ? null : _pickDuration,
                           icon: const Icon(Icons.edit),
-                          label: const Text('Set timer'),
+                          label: const Text('Đặt thời gian'),
                         ),
                         FilledButton.icon(
                           onPressed: running || total.inSeconds == 0
                               ? null
                               : _start,
                           icon: const Icon(Icons.play_arrow),
-                          label: const Text('Start'),
+                          label: const Text('Bắt đầu'),
                         ),
                         FilledButton.icon(
                           onPressed: running ? _pause : null,
                           icon: const Icon(Icons.pause),
-                          label: const Text('Pause'),
+                          label: const Text('Tạm dừng'),
                         ),
                         OutlinedButton.icon(
                           onPressed: _reset,
                           icon: const Icon(Icons.refresh),
-                          label: const Text('Reset'),
+                          label: const Text('Đặt lại'),
                         ),
                       ],
                     ),

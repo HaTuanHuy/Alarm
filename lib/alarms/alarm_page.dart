@@ -1,7 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
+import 'dart:io' show Platform;
+import 'package:permission_handler/permission_handler.dart';
 
 import '../services/notification_service.dart';
 import 'alarm.dart';
@@ -53,7 +56,7 @@ class _AlarmPageState extends State<AlarmPage> with WidgetsBindingObserver {
 
   Future<void> _persist() async {
     await repo.save(alarms);
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
   Future<void> _refreshExpiredOneTimeAlarms({
@@ -94,7 +97,7 @@ class _AlarmPageState extends State<AlarmPage> with WidgetsBindingObserver {
     }
 
     _showMessage(
-      '$base. Same-time alarm detected, scheduled +${secondOffset}s to avoid collisions.',
+      '$base. Phát hiện báo thức trùng giờ, đã dời +${secondOffset}s để tránh xúng đột.',
     );
   }
 
@@ -115,6 +118,22 @@ class _AlarmPageState extends State<AlarmPage> with WidgetsBindingObserver {
 
   Future<Alarm> _scheduleAndMerge(Alarm alarm, {int? secondOffset}) async {
     final resolvedSecondOffset = secondOffset ?? _secondOffsetFor(alarm);
+    if (Platform.isAndroid) {
+      var exactStatus = await Permission.scheduleExactAlarm.status;
+      if (!exactStatus.isGranted) {
+        exactStatus = await Permission.scheduleExactAlarm.request();
+        if (!exactStatus.isGranted) {
+          throw Exception('Exact alarm permission required');
+        }
+      }
+      var notifStatus = await Permission.notification.status;
+      if (!notifStatus.isGranted) {
+        notifStatus = await Permission.notification.request();
+        if (!notifStatus.isGranted) {
+          throw Exception('Notification permission required');
+        }
+      }
+    }
     final scheduled = await NotificationService.instance.scheduleAlarm(
       id: alarm.id,
       hour: alarm.hour,
@@ -146,18 +165,18 @@ class _AlarmPageState extends State<AlarmPage> with WidgetsBindingObserver {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Alarm details'),
+        title: const Text('Chi tiết báo thức'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: labelController,
-              decoration: const InputDecoration(labelText: 'Label'),
+              decoration: const InputDecoration(labelText: 'Nhãn'),
             ),
             const SizedBox(height: 8),
             StatefulBuilder(
               builder: (context, setLocal) => SwitchListTile(
-                title: const Text('Repeat daily'),
+                title: const Text('Lặp hàng ngày'),
                 value: repeatDaily,
                 onChanged: (v) => setLocal(() => repeatDaily = v),
               ),
@@ -167,11 +186,11 @@ class _AlarmPageState extends State<AlarmPage> with WidgetsBindingObserver {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: const Text('Hủy'),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Save'),
+            child: const Text('Lưu'),
           ),
         ],
       ),
@@ -203,7 +222,7 @@ class _AlarmPageState extends State<AlarmPage> with WidgetsBindingObserver {
           alarm,
           secondOffset: secondOffset,
         );
-        _showScheduledMessage('Alarm created', secondOffset: secondOffset);
+        _showScheduledMessage('Đã tạo báo thức', secondOffset: secondOffset);
       }
     } catch (_) {
       if (idx >= 0) {
@@ -213,7 +232,7 @@ class _AlarmPageState extends State<AlarmPage> with WidgetsBindingObserver {
         );
       }
       _showMessage(
-        'Saved, but scheduling failed. Please check notification permissions.',
+        'Đã lưu, nhưng lên lịch thất bại. Vui lòng kiểm tra quyền thông báo.',
       );
     }
     await _persist();
@@ -239,11 +258,14 @@ class _AlarmPageState extends State<AlarmPage> with WidgetsBindingObserver {
       try {
         final secondOffset = _secondOffsetFor(updated);
         updated = await _scheduleAndMerge(updated, secondOffset: secondOffset);
-        _showScheduledMessage('Alarm updated', secondOffset: secondOffset);
+        _showScheduledMessage(
+          'Đã cập nhật báo thức',
+          secondOffset: secondOffset,
+        );
       } catch (_) {
         updated = updated.copyWith(enabled: false, clearScheduledAt: true);
         _showMessage(
-          'Time updated, but scheduling failed. Please check notification permissions.',
+          'Đã cập nhật giờ, nhưng lên lịch thất bại. Vui lòng kiểm tra quyền thông báo.',
         );
       }
     }
@@ -264,14 +286,14 @@ class _AlarmPageState extends State<AlarmPage> with WidgetsBindingObserver {
         final secondOffset = _secondOffsetFor(a);
         alarms[idx] = await _scheduleAndMerge(a, secondOffset: secondOffset);
         if (secondOffset > 0) {
-          _showScheduledMessage('Alarm enabled', secondOffset: secondOffset);
+          _showScheduledMessage('Đã bật báo thức', secondOffset: secondOffset);
         }
         await _persist();
       } catch (_) {
         alarms[idx] = a.copyWith(enabled: false, clearScheduledAt: true);
         await _persist();
         _showMessage(
-          'Could not enable alarm. Please check notification permissions.',
+          'Không thể bật báo thức. Vui lòng kiểm tra quyền thông báo.',
         );
       }
       return;
@@ -294,11 +316,11 @@ class _AlarmPageState extends State<AlarmPage> with WidgetsBindingObserver {
     final fmt = NumberFormat('00');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Alarms')),
+      appBar: AppBar(title: const Text('Báo thức')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addAlarm,
         icon: const Icon(Icons.add),
-        label: const Text('Add alarm'),
+        label: const Text('Thêm báo thức'),
       ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
@@ -320,10 +342,13 @@ class _AlarmPageState extends State<AlarmPage> with WidgetsBindingObserver {
                         color: theme.colorScheme.primary,
                       ),
                       const SizedBox(height: 12),
-                      Text('No alarms yet', style: theme.textTheme.titleLarge),
+                      Text(
+                        'Chưa có báo thức',
+                        style: theme.textTheme.titleLarge,
+                      ),
                       const SizedBox(height: 6),
                       Text(
-                        'Tap Add alarm to create your first reminder.',
+                        'Nhấn Thêm báo thức để tạo nhắc nhở đầu tiên.',
                         style: theme.textTheme.bodyMedium,
                         textAlign: TextAlign.center,
                       ),
@@ -340,7 +365,7 @@ class _AlarmPageState extends State<AlarmPage> with WidgetsBindingObserver {
                 final a = alarms[i];
                 final time = '${fmt.format(a.hour)}:${fmt.format(a.minute)}';
                 final subtitle = a.label.isEmpty
-                    ? (a.repeatDaily ? 'Daily' : 'One-time')
+                    ? (a.repeatDaily ? 'Hàng ngày' : 'Một lần')
                     : a.label;
                 return Card(
                   child: Padding(
@@ -372,7 +397,7 @@ class _AlarmPageState extends State<AlarmPage> with WidgetsBindingObserver {
                         IconButton(
                           icon: const Icon(Icons.edit_outlined),
                           onPressed: () => _editAlarmTime(a),
-                          tooltip: 'Edit time',
+                          tooltip: 'Sửa giờ',
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete_outline),

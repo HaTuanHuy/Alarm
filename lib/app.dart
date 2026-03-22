@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       navigatorKey: rootNavKey,
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Clock',
+      title: 'Đồng hồ',
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
@@ -64,22 +64,22 @@ class _HomeShellState extends State<HomeShell> {
             NavigationDestination(
               icon: Icon(Icons.access_time_outlined),
               selectedIcon: Icon(Icons.access_time_filled),
-              label: 'Clock',
+              label: 'Đồng hồ',
             ),
             NavigationDestination(
               icon: Icon(Icons.alarm_outlined),
               selectedIcon: Icon(Icons.alarm),
-              label: 'Alarm',
+              label: 'Báo thức',
             ),
             NavigationDestination(
               icon: Icon(Icons.timer_outlined),
               selectedIcon: Icon(Icons.timer),
-              label: 'Stopwatch',
+              label: 'Bấm giờ',
             ),
             NavigationDestination(
               icon: Icon(Icons.hourglass_bottom_outlined),
               selectedIcon: Icon(Icons.hourglass_bottom),
-              label: 'Timer',
+              label: 'Hẹn giờ',
             ),
           ],
         ),
