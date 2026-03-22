@@ -118,7 +118,7 @@ class _ClockPageState extends State<ClockPage> {
                     children: [
                       TextField(
                         decoration: const InputDecoration(
-                          labelText: 'Search timezone',
+                          labelText: 'Tìm múi giờ',
                           prefixIcon: Icon(Icons.search),
                         ),
                         onChanged: (v) => setLocal(() => query = v),
@@ -176,12 +176,12 @@ class _ClockPageState extends State<ClockPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Clock'),
+        title: const Text('Đồng hồ'),
         actions: [
           IconButton(
             onPressed: _loadingZones ? null : _pickTimeZone,
             icon: const Icon(Icons.travel_explore),
-            tooltip: 'Choose timezone',
+            tooltip: 'Chọn múi giờ',
           ),
         ],
       ),
@@ -195,7 +195,10 @@ class _ClockPageState extends State<ClockPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text('Current time', style: theme.textTheme.titleMedium),
+                  Text(
+                    'Thời gian hiện tại',
+                    style: theme.textTheme.titleMedium,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     time,
@@ -210,7 +213,7 @@ class _ClockPageState extends State<ClockPage> {
                   FilledButton.tonalIcon(
                     onPressed: _loadingZones ? null : _pickTimeZone,
                     icon: const Icon(Icons.public),
-                    label: Text(selectedId ?? 'Loading timezone...'),
+                    label: Text(selectedId ?? 'Đang tải múi giờ...'),
                   ),
                   const SizedBox(height: 8),
                   Chip(
